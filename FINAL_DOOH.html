@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>DOOH Map - Upgraded Norfolk Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    #map { height: 100%; width: 100%; }
+
+    #panel {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 900;
+      background: rgba(255, 255, 255, 0.97);
+      padding: 8px 10px;
+      border-radius: 4px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+      width: 340px;
+      max-height: calc(100vh - 80px);
+      overflow-y: auto;
+      box-sizing: border-box;
+      font-size: 12px;
+    }
+    .section-title {
+      font-weight: 700;
+      margin: 6px 0 4px 0;
+      font-size: 11px;
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 2px;
+    }
+    .form-group { margin-bottom: 6px; }
+    .form-group label {
+      display: block;
+      font-size: 11px;
+      margin-bottom: 3px;
+      color: #555;
+    }
+    .form-group label.inline-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    #panel input[type='text'] {
+      width: 100%;
+      padding: 4px 6px;
+      font-size: 11px;
+      box-sizing: border-box;
+    }
+    #panel input[type='range'] { width: 100%; }
+    .slider-value-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      color: #444;
+      gap: 6px;
+      margin-top: 2px;
+    }
+    .slider-value-row span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .slider-value-row input[type='number'] {
+      width: 70px;
+      font-size: 10px;
+      padding: 2px 4px;
+      box-sizing: border-box;
+    }
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px 8px;
+    }
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      font-size: 10px;
+    }
+    .checkbox-item input {
+      margin-right: 3px;
+    }
+
+    #footer {
+      position: absolute;
+      bottom: 4px;
+      right: 4px;
+      font-size: 10px;
+      color: #555;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.9);
+      padding: 2px 6px;
+      border-radius: 3px;
+      z-index: 950;
+    }
+    #footer img { height: 16px; }
+
+    /* KPI pill – dark mode style B, centered top */
+    #kpiPanel {
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.70);
+      color: #fff;
+      padding: 9px 16px;
+      border-radius: 20px;
+      border: 2px solid #000;
+      box-shadow: 0 0 10px rgba(0,150,255,0.6);
+      display: flex;
+      gap: 20px;
+      z-index: 950;
+    }
+    #kpiPanel label { color:#fff; }
+    #kpiPanel .kpi-item span { margin-left: 6px; }
+    #kpiPanel label,
+    #kpiPanel span { font-size: 11px; }
+
+  </style>
+</head>
+<body>
+  <div id="panel">
+    <div class="section-title">Search</div>
+    <div class="form-group">
+      <label for="search">Search (ID, Name, Publisher)</label>
+      <input id="search" type="text" placeholder="Type and press Enter or Search" />
+    </div>
+    <div class="form-group">
+      <button id="searchBtn">Search</button>
+      <button id="clearBtn" class="secondary">Clear</button>
+    </div>
+
+    <div class="section-title">Audience Score</div>
+    <div class="form-group">
+      <label>Min Audience Score</label>
+      <input type="range" id="amin" min="0" max="100" value="0" />
+      <div class="slider-value-row">
+        <span>Min: <span id="aminv">0</span></span>
+      </div>
+    </div>
+
+    <div class="section-title">Performance Filters</div>
+    <div class="form-group">
+      <label class="inline-label"><input type="checkbox" id="impEnabled" checked /> Impressions</label>
+      <input type="range" id="impSlider" min="0" max="100000" value="0" />
+      <div class="slider-value-row">
+        <span>Min: <input type="number" id="impMin" value="0" min="0" max="100000" /></span>
+        <span>Max: <input type="number" id="impMax" value="100000" min="0" max="100000" /></span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="inline-label"><input type="checkbox" id="spendEnabled" checked /> Spend</label>
+      <input type="range" id="spendSlider" min="0" max="500" value="0" />
+      <div class="slider-value-row">
+        <span>Min: <input type="number" id="spendMin" value="0" min="0" max="500" step="1" /></span>
+        <span>Max: <input type="number" id="spendMax" value="500" min="0" max="500" step="1" /></span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="inline-label"><input type="checkbox" id="cpmEnabled" checked /> Floor CPM</label>
+      <input type="range" id="cpmSlider" min="0" max="20" value="0" />
+      <div class="slider-value-row">
+        <span>Min: <input type="number" id="cpmMin" value="0" min="0" max="20" step="0.1" /></span>
+        <span>Max: <input type="number" id="cpmMax" value="20" min="0" max="20" step="0.1" /></span>
+      </div>
+    </div>
+
+    <div class="section-title">Venue Types</div>
+    <div class="form-group"><div class="checkbox-group" id="venueTypeCheckboxes"></div></div>
+
+    <div class="section-title">Distance Bands</div>
+    <div class="form-group"><div class="checkbox-group" id="bandCheckboxes"></div></div>
+
+    <div class="section-title">Geo</div>
+    <div class="form-group">
+      <label>Cities</label>
+      <div class="checkbox-group" id="cityCheckboxes"></div>
+    </div>
+    <div class="form-group">
+      <label>Zip Codes</label>
+      <div class="checkbox-group" id="zipCheckboxes"></div>
+    </div>
+
+    <div class="section-title">Publishers</div>
+    <div class="form-group"><div class="checkbox-group" id="publisherCheckboxes"></div></div>
+	<!-- Export section -->
+  <div class="section-title">Export</div> <div class="form-group"> <button id="exportVisibleBtn">Export Visible Boards (CSV)</button> </div>
+  </div>
+
+  <!-- KPI Pill -->
+  <div id="kpiPanel">
+    <div class="kpi-item"><label>Total Placements </label><span id="kpiCount">0</span></div>
+    <div class="kpi-item"><label>Total Impressions </label><span id="kpiImpressions">0</span></div>
+    <div class="kpi-item"><label>Avg Audience Score </label><span id="kpiAudience">0</span></div>
+    <div class="kpi-item"><label>Avg CPM </label><span id="kpiCPM">$0</span></div>
+  </div>
+  
+
+
+
+  <div id="map"></div>
+
+  <div id="footer">
+    <span id="timestamp"></span>
+    <img src="https://powermktg.com/wp-content/uploads/2025/10/hero-logo.4dda10d1-1.svg" alt="PowerMktg" />
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <script>
+    // --- Sample placements (add city & zip so Geo filters work) AGENT SHOULD EDIT THIS SECTION ONLY ---
+    var placements = [
+ {id: '', name: ')', lat: , lng:, audienceScore: , publisher: '', venueType: '', impressions:, spend:, cpm: , city: '', zip: '' },
+
+];
+// AGENT SHOULD EDIT THIS SECTION
+    var airportCenter = [,]; // 650 Walnut St, Cincinnati, OH
+
+// ==== DOOH DATA END (AGENT SHOULD NOT EDIT BELOW THIS LINE) ===
+
+    var map = L.map('map').setView(airportCenter, 11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+
+    var markerClusterGroup = L.markerClusterGroup({
+      spiderfyOnEveryZoom: true,
+      spiderfyOnMaxZoom: true,
+      showCoverageOnHover: true,
+      maxClusterRadius: 60
+    });
+    map.addLayer(markerClusterGroup);
+
+    // Distance function
+    function distanceMiles(lat1, lon1, lat2, lon2) {
+      var R = 3958.8;
+      var dLat = (lat2 - lat1) * Math.PI / 180;
+      var dLng = (lon2 - lon1) * Math.PI / 180;
+      var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) *
+              Math.sin(dLng/2) * Math.sin(dLng/2);
+      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    }
+
+    placements.forEach(function(p) {
+      p.distanceFromCenter = distanceMiles(p.lat, p.lng, airportCenter[0], airportCenter[1]);
+    });
+
+    // Distance bands
+    var distanceBands = {
+      band10: L.circle(airportCenter, { radius: 16093, color: '#2196F3', weight: 1, fillOpacity: 0.05 }),
+      band20: L.circle(airportCenter, { radius: 32186, color: '#4CAF50', weight: 1, fillOpacity: 0.05 }),
+      band30: L.circle(airportCenter, { radius: 48280, color: '#FF9800', weight: 1, fillOpacity: 0.05 }),
+      band40: L.circle(airportCenter, { radius: 64373, color: '#9C27B0', weight: 1, fillOpacity: 0.05 }),
+      band50: L.circle(airportCenter, { radius: 80467, color: '#F44336', weight: 1, fillOpacity: 0.05 })
+    };
+
+    var bandRanges = {
+      band10: [0, 10],
+      band20: [10, 20],
+      band30: [20, 30],
+      band40: [30, 40],
+      band50: [40, 9999]
+    };
+
+    var markers = [];
+
+    function createMarkers() {
+      // Clear existing
+      for (var i = 0; i < markers.length; i++) {
+        markerClusterGroup.removeLayer(markers[i]);
+      }
+      markers = [];
+
+      for (var i = 0; i < placements.length; i++) {
+        var p = placements[i];
+        var m = L.marker([p.lat, p.lng]).bindPopup(
+          '<b>' + p.name + '</b>' +
+          '<br>ID: ' + p.id +
+          '<br>Venue: ' + (p.venueType || '') +
+          '<br>Publisher: ' + (p.publisher || '') +
+          '<br>City: ' + (p.city || '') +
+          '<br>ZIP: ' + (p.zip || '') +
+          '<br>Audience Score: ' + (p.audienceScore || 0) +
+          '<br>Impressions: ' + (p.impressions || 0).toLocaleString() +
+          '<br>Spend: ' + (p.spend || 0).toFixed(2) +
+          '<br>Floor CPM: ' + (p.cpm || 0).toFixed(2) +
+          '<br>Distance from Center: ' + p.distanceFromCenter.toFixed(1) + ' mi'
+        );
+        m.pid = p.id;
+        markerClusterGroup.addLayer(m);
+        markers.push(m);
+      }
+    }
+    createMarkers();
+
+    // Add distance bands to map
+    distanceBands.band10.addTo(map);
+    distanceBands.band20.addTo(map);
+    distanceBands.band30.addTo(map);
+    distanceBands.band40.addTo(map);
+    distanceBands.band50.addTo(map);
+
+    // --- Checkbox builders ---
+
+    function buildBandCheckboxes() {
+      var container = document.getElementById('bandCheckboxes');
+      container.innerHTML = '';
+      var bandLabels = {
+        band10: '0–10 miles',
+        band20: '10–20 miles',
+        band30: '20–30 miles',
+        band40: '30–40 miles',
+        band50: '40–50+ miles'
+      };
+      Object.keys(bandLabels).forEach(function(key) {
+        var div = document.createElement('div');
+        div.className = 'checkbox-item';
+        div.innerHTML =
+          "<input type='checkbox' data-band='" + key + "' checked />" +
+          "<span>" + bandLabels[key] + "</span>";
+        container.appendChild(div);
+      });
+      var checks = container.querySelectorAll("#bandCheckboxes input[type='checkbox']");
+      for (var i = 0; i < checks.length; i++) {
+        checks[i].addEventListener('change', function() {
+          applyBandFilters();
+          applyFilters();
+        });
+      }
+    }
+
+    function applyBandFilters() {
+      var checks = document.querySelectorAll("#bandCheckboxes input[type='checkbox'][data-band]");
+      for (var key in distanceBands) {
+        if (distanceBands.hasOwnProperty(key)) map.removeLayer(distanceBands[key]);
+      }
+      for (var i = 0; i < checks.length; i++) {
+        var cb = checks[i];
+        var bandKey = cb.getAttribute('data-band');
+        if (cb.checked && distanceBands[bandKey]) distanceBands[bandKey].addTo(map);
+      }
+    }
+
+    function getCheckedBands() {
+      var checks = document.querySelectorAll("#bandCheckboxes input[type='checkbox'][data-band]");
+      var active = [];
+      for (var i = 0; i < checks.length; i++)
+        if (checks[i].checked) active.push(checks[i].getAttribute('data-band'));
+      return active;
+    }
+
+    function buildVenueTypeCheckboxes() {
+      var container = document.getElementById('venueTypeCheckboxes');
+      container.innerHTML = '';
+      var seen = {};
+      for (var i = 0; i < placements.length; i++) {
+        var vt = placements[i].venueType;
+        if (!vt) continue;
+        if (!seen[vt]) {
+          seen[vt] = true;
+          var div = document.createElement('div');
+          div.className = 'checkbox-item';
+          div.innerHTML =
+            "<input type='checkbox' data-type='venueType' data-value='" + vt + "' checked />" +
+            "<span>" + vt + "</span>";
+          container.appendChild(div);
+        }
+      }
+      var checks = container.querySelectorAll("#venueTypeCheckboxes input[type='checkbox']");
+      for (var j = 0; j < checks.length; j++) {
+        checks[j].addEventListener('change', function () {
+          applyFilters();
+        });
+      }
+    }
+
+    function getCheckedVenueTypes() {
+      var checks = document.querySelectorAll("#venueTypeCheckboxes input[type='checkbox'][data-type='venueType']");
+      var values = [];
+      for (var i = 0; i < checks.length; i++)
+        if (checks[i].checked) values.push(checks[i].getAttribute('data-value'));
+      return values;
+    }
+
+    function buildPublisherCheckboxes() {
+      var container = document.getElementById('publisherCheckboxes');
+      container.innerHTML = '';
+      var seen = {};
+      for (var i = 0; i < placements.length; i++) {
+        var pub = placements[i].publisher;
+        if (!pub) continue;
+        if (!seen[pub]) {
+          seen[pub] = true;
+          var div = document.createElement('div');
+          div.className = 'checkbox-item';
+          div.innerHTML =
+            "<input type='checkbox' data-publisher='" + pub + "' checked />" +
+            "<span>" + pub + "</span>";
+          container.appendChild(div);
+        }
+      }
+      var checks = container.querySelectorAll("#publisherCheckboxes input[type='checkbox']");
+      for (var j = 0; j < checks.length; j++) {
+        checks[j].addEventListener('change', function () {
+          applyFilters();
+        });
+      }
+    }
+
+    function getCheckedPublishers() {
+      var checks = document.querySelectorAll("#publisherCheckboxes input[type='checkbox'][data-publisher]");
+      var values = [];
+      for (var i = 0; i < checks.length; i++)
+        if (checks[i].checked) values.push(checks[i].getAttribute('data-publisher'));
+      return values;
+    }
+
+    // --- GEO: City / ZIP checkbox builders ---
+
+    function buildCityCheckboxes() {
+      var container = document.getElementById('cityCheckboxes');
+      if (!container) return;
+      container.innerHTML = '';
+      var seen = {};
+      placements.forEach(function (p) {
+        var city = p.city;
+        if (!city) return;
+        if (!seen[city]) {
+          seen[city] = true;
+          var div = document.createElement('div');
+          div.className = 'checkbox-item';
+          div.innerHTML =
+            "<input type='checkbox' data-city='" + city + "' checked />" +
+            "<span>" + city + "</span>";
+          container.appendChild(div);
+        }
+      });
+      var checks = container.querySelectorAll("input[type='checkbox']");
+      checks.forEach(function (cb) {
+        cb.addEventListener('change', function () {
+          applyFilters();
+        });
+      });
+    }
+
+    function buildZipCheckboxes() {
+      var container = document.getElementById('zipCheckboxes');
+      if (!container) return;
+      container.innerHTML = '';
+      var seen = {};
+      placements.forEach(function (p) {
+        var zip = p.zip;
+        if (!zip) return;
+        if (!seen[zip]) {
+          seen[zip] = true;
+          var div = document.createElement('div');
+          div.className = 'checkbox-item';
+          div.innerHTML =
+            "<input type='checkbox' data-zip='" + zip + "' checked />" +
+            "<span>" + zip + "</span>";
+          container.appendChild(div);
+        }
+      });
+      var checks = container.querySelectorAll("input[type='checkbox']");
+      checks.forEach(function (cb) {
+        cb.addEventListener('change', function () {
+          applyFilters();
+        });
+      });
+    }
+
+    function getCheckedCities() {
+      var cbs = document.querySelectorAll("#cityCheckboxes input[type='checkbox']:checked");
+      var values = [];
+      cbs.forEach(function (cb) {
+        values.push(cb.getAttribute("data-city"));
+      });
+      return values;
+    }
+
+    function getCheckedZips() {
+      var cbs = document.querySelectorAll("#zipCheckboxes input[type='checkbox']:checked");
+      var values = [];
+      cbs.forEach(function (cb) {
+        values.push(cb.getAttribute("data-zip"));
+      });
+      return values;
+    }
+
+    // --- Slider binding helpers ---
+
+    function bindSliderWithInputs(sliderId, minId, maxId) {
+      var slider = document.getElementById(sliderId);
+      var minInput = document.getElementById(minId);
+      var maxInput = document.getElementById(maxId);
+
+      slider.addEventListener('input', function () {
+        var v = Number(slider.value);
+        minInput.value = v;
+        if (Number(maxInput.value) < v) maxInput.value = v;
+        applyFilters();
+      });
+
+      minInput.addEventListener('change', function () {
+        var min = Number(minInput.value);
+        var max = Number(maxInput.value);
+        if (min < Number(slider.min)) min = Number(slider.min);
+        if (min > Number(slider.max)) min = Number(slider.max);
+        if (min > max) max = min;
+        minInput.value = min;
+        maxInput.value = max;
+        slider.value = min;
+        applyFilters();
+      });
+
+      maxInput.addEventListener('change', function () {
+        var min = Number(minInput.value);
+        var max = Number(maxInput.value);
+        if (max < min) max = min;
+        if (max > Number(slider.max)) max = Number(slider.max);
+        maxInput.value = max;
+        applyFilters();
+      });
+    }
+
+    bindSliderWithInputs('impSlider', 'impMin', 'impMax');
+    bindSliderWithInputs('spendSlider', 'spendMin', 'spendMax');
+    bindSliderWithInputs('cpmSlider', 'cpmMin', 'cpmMax');
+
+    
+function flyToVisibleMarkers() {
+  var layers = markerClusterGroup.getLayers();
+  if (!layers || layers.length === 0) { return; }
+  var bounds = markerClusterGroup.getBounds();
+  if (bounds && bounds.isValid()) {
+    map.fitBounds(bounds.pad(0.2));
+  }
+}
+
+ // --- KPI updater ---
+
+    function updateKPIs() {
+      var visibleMarkers = markerClusterGroup.getLayers();
+
+      var total = visibleMarkers.length;
+      var totalImpressions = 0;
+      var totalCPM = 0;
+      var totalAudience = 0;
+
+      visibleMarkers.forEach(function (m) {
+        var p = placements.find(function (x) { return x.id === m.pid; });
+        if (!p) return;
+
+        totalImpressions += p.impressions || 0;
+        totalCPM += p.cpm || 0;
+        totalAudience += p.audienceScore || 0;
+      });
+
+      var avgCPM = total > 0 ? (totalCPM / total).toFixed(2) : "0";
+      var avgAudienceScore = total > 0 ? (totalAudience / total).toFixed(1) : "0";
+
+      document.getElementById("kpiCount").innerText = total;
+      document.getElementById("kpiImpressions").innerText = totalImpressions.toLocaleString();
+      document.getElementById("kpiCPM").innerText = "$" + avgCPM;
+      document.getElementById("kpiAudience").innerText = avgAudienceScore;
+    }
+
+    // --- Main filter function ---
+
+    function applyFilters() {
+      var amin = Number(document.getElementById('amin').value);
+      document.getElementById('aminv').innerText = amin;
+
+      var impEnabled = document.getElementById('impEnabled').checked;
+      var impMin = Number(document.getElementById('impMin').value);
+      var impMax = Number(document.getElementById('impMax').value);
+
+      var spendEnabled = document.getElementById('spendEnabled').checked;
+      var spendMin = Number(document.getElementById('spendMin').value);
+      var spendMax = Number(document.getElementById('spendMax').value);
+
+      var cpmEnabled = document.getElementById('cpmEnabled').checked;
+      var cpmMin = Number(document.getElementById('cpmMin').value);
+      var cpmMax = Number(document.getElementById('cpmMax').value);
+
+      var search = (document.getElementById('search').value || '').trim().toLowerCase();
+
+      var venueTypes = getCheckedVenueTypes();
+      var publishers = getCheckedPublishers();
+      var activeBands = getCheckedBands();
+      var selectedCities = getCheckedCities();
+      var selectedZips = getCheckedZips();
+
+      var useBandFilter = activeBands.length > 0;
+      var usePublisherFilter = publishers.length > 0;
+
+      markerClusterGroup.clearLayers();
+
+      for (var i = 0; i < markers.length; i++) {
+        var m = markers[i];
+        var p = null;
+        for (var k = 0; k < placements.length; k++) {
+          if (placements[k].id === m.pid) { p = placements[k]; break; }
+        }
+        if (!p) continue;
+
+        var vis = true;
+
+        var score = p.audienceScore || 0;
+        if (score < amin) vis = false;
+
+        if (vis && impEnabled && typeof p.impressions === 'number') {
+          if (p.impressions < impMin || p.impressions > impMax) vis = false;
+        }
+        if (vis && spendEnabled && typeof p.spend === 'number') {
+          if (p.spend < spendMin || p.spend > spendMax) vis = false;
+        }
+        if (vis && cpmEnabled && typeof p.cpm === 'number') {
+          if (p.cpm < cpmMin || p.cpm > cpmMax) vis = false;
+        }
+
+        if (vis && venueTypes.length > 0 && p.venueType && venueTypes.indexOf(p.venueType) === -1) {
+          vis = false;
+        }
+
+        if (vis) {
+          if (!usePublisherFilter) {
+            vis = false;
+          } else if (p.publisher && publishers.indexOf(p.publisher) === -1) {
+            vis = false;
+          }
+        }
+
+        if (vis && search) {
+          var haystack = (p.id + ' ' + p.name + ' ' + (p.publisher || '')).toLowerCase();
+          if (haystack.indexOf(search) === -1) vis = false;
+        }
+
+        if (vis && useBandFilter) {
+          var inAnyBand = false;
+          for (var b = 0; b < activeBands.length; b++) {
+            var bandKey = activeBands[b];
+            var range = bandRanges[bandKey];
+            if (!range) continue;
+            if (p.distanceFromCenter >= range[0] && p.distanceFromCenter < range[1]) {
+              inAnyBand = true; break;
+            }
+          }
+          if (!inAnyBand) vis = false;
+        }
+
+        // NEW: city filter
+        if (vis && selectedCities.length > 0) {
+          if (!p.city || selectedCities.indexOf(p.city) === -1) vis = false;
+        }
+
+        // NEW: zip filter
+        if (vis && selectedZips.length > 0) {
+          if (!p.zip || selectedZips.indexOf(p.zip) === -1) vis = false;
+        }
+
+        if (vis) markerClusterGroup.addLayer(m);
+      }
+
+      updateKPIs();
+    }
+
+    // Search / buttons
+    document.getElementById('searchBtn').addEventListener('click', function () {
+      applyFilters();
+    });
+    document.getElementById('search').addEventListener('keyup', function (e) {
+      if (e.key === 'Enter') applyFilters();
+    });
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      document.getElementById('search').value = '';
+      applyFilters();
+    });
+    document.getElementById('amin').addEventListener('input', function () {
+      applyFilters();
+    });
+
+    // Init UI
+    buildVenueTypeCheckboxes();
+    buildBandCheckboxes();
+    buildPublisherCheckboxes();
+    buildCityCheckboxes();
+    buildZipCheckboxes();
+    applyFilters();
+    applyBandFilters();
+	
+	// === Export visible/filtered boards as CSV (only what is currently on screen) ===
+function exportVisibleBoardsToCSV() {
+  if (!window.markerClusterGroup || !window.placements) {
+    alert('Map is not initialized yet.');
+    return;
+  }
+
+  var layers = markerClusterGroup.getLayers();
+  if (!layers || layers.length === 0) {
+    alert('No boards to export. Adjust your filters and zoom level first.');
+    return;
+  }
+
+  var header = [
+    'Screen ID',
+    'Name',
+    'Publisher',
+    'City',
+    'Zip',
+    'Venue Type',
+    'Audience Score',
+    'Impressions',
+    'Spend',
+    'Floor CPM',
+    'Distance From Center (mi)'
+  ];
+  var rows = [header.join(',')];
+
+  function esc(v) {
+    if (v === null || v === undefined) v = '';
+    v = String(v);
+    if (v.indexOf(',') !== -1 || v.indexOf('"') !== -1) {
+      v = '"' + v.replace(/"/g, '""') + '"';
+    }
+    return v;
+  }
+
+  for (var i = 0; i < layers.length; i++) {
+    var marker = layers[i];
+    var p = null;
+
+    // Match this marker to a placement by id
+    for (var j = 0; j < placements.length; j++) {
+      if (placements[j].id === marker.pid) {
+        p = placements[j];
+        break;
+      }
+    }
+    if (!p) continue;
+
+    var d = (typeof p.distanceFromCenter === 'number')
+      ? p.distanceFromCenter.toFixed(2)
+      : '';
+
+    var row = [
+      esc(p.id),
+      esc(p.name),
+      esc(p.publisher),
+      esc(p.city),
+      esc(p.zip),
+      esc(p.venueType),
+      esc(p.audienceScore),
+      esc(p.impressions),
+      esc(p.spend),
+      esc(p.cpm),
+      esc(d)
+    ];
+
+    rows.push(row.join(','));
+  }
+
+  if (rows.length === 1) {
+    alert('No boards are currently visible to export.');
+    return;
+  }
+
+  var csv = rows.join('\n');
+  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'visible_boards_' + new Date().toISOString().slice(0, 10) + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// Wire up the Export button
+(function () {
+  function hookupExportButton() {
+    var btn = document.getElementById('exportVisibleBtn');
+    if (btn) {
+      btn.addEventListener('click', exportVisibleBoardsToCSV);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', hookupExportButton);
+  } else {
+    hookupExportButton();
+  }
+})();
+
+// timestamp footer
+document.getElementById('timestamp').innerText = 'Exported: ' + new Date().toLocaleString();
+
+    // timestamp footer
+    document.getElementById('timestamp').innerText = 'Exported: ' + new Date().toLocaleString();
+  </script>
+
+<script>
+// === Export visible boards (added non-destructively) ===
+(function() {
+  function exportVisibleBoardsToCSV() {
+    if (!window.markerClusterGroup || !window.placements) {
+      alert('Map is not initialized yet.');
+      return;
+    }
+    var layers = markerClusterGroup.getLayers();
+    if (!layers || layers.length === 0) {
+      alert('No boards to export. Adjust your filters and zoom level first.');
+      return;
+    }
+    var header = ['Screen ID','Name','Publisher','City','Zip','Venue Type','Audience Score','Impressions','Spend','Floor CPM','Distance From Center (mi)'];
+    var rows = [header.join(',')];
+    function esc(v) {
+      if (v === null || v === undefined) v = '';
+      v = String(v);
+      if (v.indexOf(',') !== -1 || v.indexOf('"') !== -1) {
+        v = '"' + v.replace(/"/g,'""') + '"';
+      }
+      return v;
+    }
+    for (var i = 0; i < layers.length; i++) {
+      var marker = layers[i];
+      var p = null;
+      for (var j = 0; j < placements.length; j++) {
+        if (placements[j].id === marker.pid) {
+          p = placements[j];
+          break;
+        }
+      }
+      if (!p) continue;
+      var d = (typeof p.distanceFromCenter === 'number') ? p.distanceFromCenter.toFixed(2) : '';
+      var row = [
+        esc(p.id),
+        esc(p.name),
+        esc(p.publisher),
+        esc(p.city),
+        esc(p.zip),
+        esc(p.venueType),
+        esc(p.audienceScore),
+        esc(p.impressions),
+        esc(p.spend),
+        esc(p.cpm),
+        esc(d)
+      ];
+      rows.push(row.join(','));
+    }
+    if (rows.length === 1) {
+      alert('No boards are currently visible to export.');
+      return;
+    }
+    var csv = rows.join('
+');
+    var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'visible_boards_' + new Date().toISOString().slice(0,10) + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function addExportControls() {
+    var panel = document.getElementById('panel');
+    if (!panel) return;
+    // Section title
+    var titleDiv = document.createElement('div');
+    titleDiv.className = 'section-title';
+    titleDiv.textContent = 'Export';
+    // Form group with button
+    var groupDiv = document.createElement('div');
+    groupDiv.className = 'form-group';
+    var btn = document.createElement('button');
+    btn.id = 'exportVisibleBtn';
+    btn.textContent = 'Export Visible Boards (CSV)';
+    groupDiv.appendChild(btn);
+    panel.appendChild(titleDiv);
+    panel.appendChild(groupDiv);
+    btn.addEventListener('click', exportVisibleBoardsToCSV);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', addExportControls);
+  } else {
+    addExportControls();
+  }
+})();
+</script>
+
+</body>
+</html>
