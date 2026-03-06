@@ -2,223 +2,381 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>DOOH Map - Upgraded Norfolk Test</title>
+  <title>DOOH Mapper - Spokane Billboards</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+  <!-- Leaflet MarkerCluster CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"
+  />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"
+  />
+
   <style>
-    html, body {
+    html,
+    body {
       height: 100%;
       margin: 0;
-      padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
     }
-    #map { height: 100%; width: 100%; }
 
-    #panel {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      z-index: 900;
-      background: rgba(255, 255, 255, 0.97);
-      padding: 8px 10px;
-      border-radius: 4px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-      width: 340px;
-      max-height: calc(100vh - 80px);
-      overflow-y: auto;
-      box-sizing: border-box;
-      font-size: 12px;
-    }
-    .section-title {
-      font-weight: 700;
-      margin: 6px 0 4px 0;
-      font-size: 11px;
-      border-bottom: 1px solid #e0e0e0;
-      padding-bottom: 2px;
-    }
-    .form-group { margin-bottom: 6px; }
-    .form-group label {
-      display: block;
-      font-size: 11px;
-      margin-bottom: 3px;
-      color: #555;
-    }
-    .form-group label.inline-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-    #panel input[type='text'] {
-      width: 100%;
-      padding: 4px 6px;
-      font-size: 11px;
-      box-sizing: border-box;
-    }
-    #panel input[type='range'] { width: 100%; }
-    .slider-value-row {
+    #app {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 10px;
-      color: #444;
-      gap: 6px;
-      margin-top: 2px;
+      flex-direction: column;
+      height: 100%;
     }
-    .slider-value-row span {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .slider-value-row input[type='number'] {
-      width: 70px;
-      font-size: 10px;
-      padding: 2px 4px;
-      box-sizing: border-box;
-    }
-    .checkbox-group {
+
+    header {
+      padding: 10px 16px;
+      border-bottom: 1px solid #ddd;
       display: flex;
       flex-wrap: wrap;
-      gap: 3px 8px;
-    }
-    .checkbox-item {
-      display: flex;
       align-items: center;
-      font-size: 10px;
-    }
-    .checkbox-item input {
-      margin-right: 3px;
-    }
-
-    #footer {
-      position: absolute;
-      bottom: 4px;
-      right: 4px;
-      font-size: 10px;
-      color: #555;
-      display: flex;
-      align-items: center;
+      justify-content: space-between;
       gap: 8px;
-      background: rgba(255,255,255,0.9);
-      padding: 2px 6px;
-      border-radius: 3px;
-      z-index: 950;
     }
-    #footer img { height: 16px; }
 
-    /* KPI pill – dark mode style B, centered top */
-    #kpiPanel {
-      position: absolute;
-      top: 14px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.70);
-      color: #fff;
-      padding: 9px 16px;
-      border-radius: 20px;
-      border: 2px solid #000;
-      box-shadow: 0 0 10px rgba(0,150,255,0.6);
+    header h1 {
+      font-size: 18px;
+      margin: 0;
+    }
+
+    header .subtitle {
+      font-size: 12px;
+      color: #555;
+    }
+
+    #content {
       display: flex;
-      gap: 20px;
-      z-index: 950;
+      flex: 1;
+      min-height: 0;
     }
-    #kpiPanel label { color:#fff; }
-    #kpiPanel .kpi-item span { margin-left: 6px; }
-    #kpiPanel label,
-    #kpiPanel span { font-size: 11px; }
 
+    #sidebar {
+      width: 340px;
+      max-width: 40%;
+      border-right: 1px solid #ddd;
+      padding: 10px;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+
+    #map {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: #555;
+      margin-top: 10px;
+      margin-bottom: 4px;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .kpi-card {
+      border-radius: 6px;
+      border: 1px solid #eee;
+      padding: 6px 8px;
+      background: #fafafa;
+    }
+
+    .kpi-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      color: #777;
+      margin-bottom: 4px;
+    }
+
+    .kpi-value {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .filters {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 12px;
+    }
+
+    .filter-group {
+      border-radius: 6px;
+      border: 1px solid #eee;
+      padding: 6px 8px;
+      background: #fafafa;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 4px;
+    }
+
+    .chip {
+      border-radius: 999px;
+      border: 1px solid #ddd;
+      padding: 2px 8px;
+      font-size: 11px;
+      background: white;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .chip.active {
+      background: #2563eb;
+      color: white;
+      border-color: #2563eb;
+    }
+
+    .chip.control-chip {
+      background: #f3f4ff;
+      border-style: dashed;
+      color: #374151;
+    }
+
+    .range-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 4px;
+    }
+
+    .range-row input[type="number"] {
+      width: 90px;
+      font-size: 12px;
+      padding: 2px 4px;
+    }
+
+    .range-row label {
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .placement-list {
+      margin-top: 8px;
+      max-height: 260px;
+      overflow-y: auto;
+      border-radius: 6px;
+      border: 1px solid #eee;
+      background: #fff;
+    }
+
+    .placement-row {
+      padding: 6px 8px;
+      border-bottom: 1px solid #f1f1f1;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .placement-row:hover {
+      background: #f3f4ff;
+    }
+
+    .placement-row:last-child {
+      border-bottom: none;
+    }
+
+    .placement-name {
+      font-weight: 600;
+      font-size: 11px;
+    }
+
+    .placement-meta {
+      color: #666;
+    }
+
+    .badge {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 1px 6px;
+      font-size: 10px;
+      background: #eef2ff;
+      color: #3730a3;
+      margin-right: 4px;
+    }
+
+    .radius-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      font-size: 10px;
+      margin-top: 4px;
+    }
+
+    .radius-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 1px 6px;
+      border-radius: 999px;
+      border: 1px solid #ddd;
+      background: #fff;
+    }
+
+    .radius-swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+    }
+
+    .radius-10 {
+      background: rgba(37, 99, 235, 0.6);
+    }
+
+    .radius-20 {
+      background: rgba(16, 185, 129, 0.6);
+    }
+
+    .radius-30 {
+      background: rgba(234, 179, 8, 0.6);
+    }
+
+    .radius-40 {
+      background: rgba(248, 113, 113, 0.6);
+    }
+
+    .small-muted {
+      font-size: 10px;
+      color: #777;
+      margin-top: 2px;
+    }
   </style>
 </head>
 <body>
-  <div id="panel">
-    <div class="section-title">Search</div>
-    <div class="form-group">
-      <label for="search">Search (ID, Name, Publisher)</label>
-      <input id="search" type="text" placeholder="Type and press Enter or Search" />
-    </div>
-    <div class="form-group">
-      <button id="searchBtn">Search</button>
-      <button id="clearBtn" class="secondary">Clear</button>
-    </div>
-
-    <div class="section-title">Audience Score</div>
-    <div class="form-group">
-      <label>Min Audience Score</label>
-      <input type="range" id="amin" min="0" max="100" value="0" />
-      <div class="slider-value-row">
-        <span>Min: <span id="aminv">0</span></span>
+  <div id="app">
+    <header>
+		  // AGENT SHOULD EDIT THIS SECTION
+      <div>
+        <h1>DOOH Mapper – Spokane, WA</h1>
+        <div class="subtitle">
+          Central location: 720 W Mallon Ave, Spokane, WA 99201
+        </div>
+		  // ==== DOOH DATA END (AGENT SHOULD NOT EDIT BELOW THIS LINE) ===
       </div>
-    </div>
-
-    <div class="section-title">Performance Filters</div>
-    <div class="form-group">
-      <label class="inline-label"><input type="checkbox" id="impEnabled" checked /> Impressions</label>
-      <input type="range" id="impSlider" min="0" max="100000" value="0" />
-      <div class="slider-value-row">
-        <span>Min: <input type="number" id="impMin" value="0" min="0" max="100000" /></span>
-        <span>Max: <input type="number" id="impMax" value="100000" min="0" max="100000" /></span>
+      <div class="subtitle">
+        Use the distance bands (0–10, 10–20, 20–30, 30–40, 40+ miles) with
+        publisher, venue, CPM, and spend filters to find the best billboards.
       </div>
-    </div>
-    <div class="form-group">
-      <label class="inline-label"><input type="checkbox" id="spendEnabled" checked /> Spend</label>
-      <input type="range" id="spendSlider" min="0" max="500" value="0" />
-      <div class="slider-value-row">
-        <span>Min: <input type="number" id="spendMin" value="0" min="0" max="500" step="1" /></span>
-        <span>Max: <input type="number" id="spendMax" value="500" min="0" max="500" step="1" /></span>
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="inline-label"><input type="checkbox" id="cpmEnabled" checked /> Floor CPM</label>
-      <input type="range" id="cpmSlider" min="0" max="20" value="0" />
-      <div class="slider-value-row">
-        <span>Min: <input type="number" id="cpmMin" value="0" min="0" max="20" step="0.1" /></span>
-        <span>Max: <input type="number" id="cpmMax" value="20" min="0" max="20" step="0.1" /></span>
-      </div>
-    </div>
+    </header>
 
-    <div class="section-title">Venue Types</div>
-    <div class="form-group"><div class="checkbox-group" id="venueTypeCheckboxes"></div></div>
+    <div id="content">
+      <aside id="sidebar">
+        <div class="section-title">Summary KPIs (Filtered)</div>
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">Total Impressions</div>
+            <div class="kpi-value" id="kpi-impressions">0</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Total Spend (USD)</div>
+            <div class="kpi-value" id="kpi-spend">$0</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Avg CPM (USD)</div>
+            <div class="kpi-value" id="kpi-cpm">0</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Active Placements</div>
+            <div class="kpi-value" id="kpi-count">0</div>
+          </div>
+        </div>
 
-    <div class="section-title">Distance Bands</div>
-    <div class="form-group"><div class="checkbox-group" id="bandCheckboxes"></div></div>
+        <div class="section-title">Distance Bands (miles from venue)</div>
+        <div class="filter-group">
+          <div id="distance-chips" class="chips"></div>
+          <div class="radius-legend">
+            <div class="radius-pill">
+              <span class="radius-swatch radius-10"></span>
+              <span>10 mi radius</span>
+            </div>
+            <div class="radius-pill">
+              <span class="radius-swatch radius-20"></span>
+              <span>20 mi</span>
+            </div>
+            <div class="radius-pill">
+              <span class="radius-swatch radius-30"></span>
+              <span>30 mi</span>
+            </div>
+            <div class="radius-pill">
+              <span class="radius-swatch radius-40"></span>
+              <span>40 mi</span>
+            </div>
+          </div>
+          <div class="small-muted">
+            Distance bands are always fixed at 0–10, 10–20, 20–30, 30–40, and
+            40+ miles. Toggle bands to focus on specific travel radii.
+          </div>
+        </div>
 
-    <div class="section-title">Geo</div>
-    <div class="form-group">
-      <label>Cities</label>
-      <div class="checkbox-group" id="cityCheckboxes"></div>
+        <div class="section-title">Filters</div>
+        <div class="filters">
+          <div class="filter-group">
+            <div class="kpi-label" style="margin-bottom: 2px;">
+              Publishers
+            </div>
+            <div id="publisher-chips" class="chips"></div>
+          </div>
+
+          <div class="filter-group">
+            <div class="kpi-label" style="margin-bottom: 2px;">
+              Venue Types
+            </div>
+            <div id="venue-chips" class="chips"></div>
+          </div>
+
+          <div class="filter-group">
+            <div class="kpi-label" style="margin-bottom: 4px;">
+              CPM &amp; Spend
+            </div>
+            <div class="range-row">
+              <label for="min-cpm">Min CPM</label>
+              <input type="number" id="min-cpm" step="0.01" />
+              <label for="max-cpm">Max CPM</label>
+              <input type="number" id="max-cpm" step="0.01" />
+            </div>
+            <div class="range-row">
+              <label for="min-spend">Min Spend</label>
+              <input type="number" id="min-spend" step="0.01" />
+              <label for="max-spend">Max Spend</label>
+              <input type="number" id="max-spend" step="0.01" />
+            </div>
+            <div class="small-muted">
+              Leave blank for no limit. All values are in USD.
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title">Placements (Filtered)</div>
+        <div id="placement-list" class="placement-list"></div>
+      </aside>
+
+      <main id="map"></main>
     </div>
-    <div class="form-group">
-      <label>Zip Codes</label>
-      <div class="checkbox-group" id="zipCheckboxes"></div>
-    </div>
-
-    <div class="section-title">Publishers</div>
-    <div class="form-group"><div class="checkbox-group" id="publisherCheckboxes"></div></div>
-	<!-- Export section -->
-  <div class="section-title">Export</div> <div class="form-group"> <button id="exportVisibleBtn">Export Visible Boards (CSV)</button> </div>
   </div>
 
-  <!-- KPI Pill -->
-  <div id="kpiPanel">
-    <div class="kpi-item"><label>Total Placements </label><span id="kpiCount">0</span></div>
-    <div class="kpi-item"><label>Total Impressions </label><span id="kpiImpressions">0</span></div>
-    <div class="kpi-item"><label>Avg Audience Score </label><span id="kpiAudience">0</span></div>
-    <div class="kpi-item"><label>Avg CPM </label><span id="kpiCPM">$0</span></div>
-  </div>
-  
-
-
-
-  <div id="map"></div>
-
-  <div id="footer">
-    <span id="timestamp"></span>
-    <img src="https://powermktg.com/wp-content/uploads/2025/10/hero-logo.4dda10d1-1.svg" alt="PowerMktg" />
-  </div>
-
+  <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- MarkerCluster JS -->
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
   <script>
 
 // AGENT SHOULD EDIT THIS SECTION
@@ -228,680 +386,403 @@
 
 // ==== DOOH DATA END (AGENT SHOULD NOT EDIT BELOW THIS LINE) ===
 
-    var map = L.map('map').setView(airportCenter, 11);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-
-    var markerClusterGroup = L.markerClusterGroup({
-      spiderfyOnEveryZoom: true,
-      spiderfyOnMaxZoom: true,
-      showCoverageOnHover: true,
-      maxClusterRadius: 60
-    });
-    map.addLayer(markerClusterGroup);
-
-    // Distance function
+   // Utility: Haversine distance between two lat/lng pairs in miles.
     function distanceMiles(lat1, lon1, lat2, lon2) {
-      var R = 3958.8;
-      var dLat = (lat2 - lat1) * Math.PI / 180;
-      var dLng = (lon2 - lon1) * Math.PI / 180;
-      var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) *
-              Math.sin(dLng/2) * Math.sin(dLng/2);
-      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      var R = 3958.8; // Earth radius in miles
+      var toRad = function (deg) {
+        return (deg * Math.PI) / 180;
+      };
+      var dLat = toRad(lat2 - lat1);
+      var dLon = toRad(lon2 - lon1);
+      var a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) *
+          Math.cos(toRad(lat2)) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
+      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       return R * c;
     }
 
-    placements.forEach(function(p) {
-      p.distanceFromCenter = distanceMiles(p.lat, p.lng, airportCenter[0], airportCenter[1]);
-    });
+    // Initialize map
+    var map = L.map("map").setView(airportCenter, 11);
 
-    // Distance bands
-    var distanceBands = {
-      band10: L.circle(airportCenter, { radius: 16093, color: '#2196F3', weight: 1, fillOpacity: 0.05 }),
-      band20: L.circle(airportCenter, { radius: 32186, color: '#4CAF50', weight: 1, fillOpacity: 0.05 }),
-      band30: L.circle(airportCenter, { radius: 48280, color: '#FF9800', weight: 1, fillOpacity: 0.05 }),
-      band40: L.circle(airportCenter, { radius: 64373, color: '#9C27B0', weight: 1, fillOpacity: 0.05 }),
-      band50: L.circle(airportCenter, { radius: 80467, color: '#F44336', weight: 1, fillOpacity: 0.05 })
-    };
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap contributors"
+    }).addTo(map);
 
-    var bandRanges = {
-      band10: [0, 10],
-      band20: [10, 20],
-      band30: [20, 30],
-      band40: [30, 40],
-      band50: [40, 9999]
-    };
+    // Center marker
+    var centerMarker = L.marker(airportCenter, {
+      title: "Central Venue"
+    }).addTo(map);
 
-    var markers = [];
+    centerMarker.bindPopup(
+      "<b>Central Venue</b><br/>720 W Mallon Ave<br/>Spokane, WA 99201"
+    );
 
-    function createMarkers() {
-      // Clear existing
-      for (var i = 0; i < markers.length; i++) {
-        markerClusterGroup.removeLayer(markers[i]);
-      }
-      markers = [];
-
-      for (var i = 0; i < placements.length; i++) {
-        var p = placements[i];
-        var m = L.marker([p.lat, p.lng]).bindPopup(
-          '<b>' + p.name + '</b>' +
-          '<br>ID: ' + p.id +
-          '<br>Venue: ' + (p.venueType || '') +
-          '<br>Publisher: ' + (p.publisher || '') +
-          '<br>City: ' + (p.city || '') +
-          '<br>ZIP: ' + (p.zip || '') +
-          '<br>Audience Score: ' + (p.audienceScore || 0) +
-          '<br>Impressions: ' + (p.impressions || 0).toLocaleString() +
-          '<br>Spend: ' + (p.spend || 0).toFixed(2) +
-          '<br>Floor CPM: ' + (p.cpm || 0).toFixed(2) +
-          '<br>Distance from Center: ' + p.distanceFromCenter.toFixed(1) + ' mi'
-        );
-        m.pid = p.id;
-        markerClusterGroup.addLayer(m);
-        markers.push(m);
-      }
-    }
-    createMarkers();
-
-    // Add distance bands to map
-    distanceBands.band10.addTo(map);
-    distanceBands.band20.addTo(map);
-    distanceBands.band30.addTo(map);
-    distanceBands.band40.addTo(map);
-    distanceBands.band50.addTo(map);
-
-    // --- Checkbox builders ---
-
-    function buildBandCheckboxes() {
-      var container = document.getElementById('bandCheckboxes');
-      container.innerHTML = '';
-      var bandLabels = {
-        band10: '0–10 miles',
-        band20: '10–20 miles',
-        band30: '20–30 miles',
-        band40: '30–40 miles',
-        band50: '40–50+ miles'
-      };
-      Object.keys(bandLabels).forEach(function(key) {
-        var div = document.createElement('div');
-        div.className = 'checkbox-item';
-        div.innerHTML =
-          "<input type='checkbox' data-band='" + key + "' checked />" +
-          "<span>" + bandLabels[key] + "</span>";
-        container.appendChild(div);
-      });
-      var checks = container.querySelectorAll("#bandCheckboxes input[type='checkbox']");
-      for (var i = 0; i < checks.length; i++) {
-        checks[i].addEventListener('change', function() {
-          applyBandFilters();
-          applyFilters();
-        });
-      }
-    }
-
-    function applyBandFilters() {
-      var checks = document.querySelectorAll("#bandCheckboxes input[type='checkbox'][data-band]");
-      for (var key in distanceBands) {
-        if (distanceBands.hasOwnProperty(key)) map.removeLayer(distanceBands[key]);
-      }
-      for (var i = 0; i < checks.length; i++) {
-        var cb = checks[i];
-        var bandKey = cb.getAttribute('data-band');
-        if (cb.checked && distanceBands[bandKey]) distanceBands[bandKey].addTo(map);
-      }
-    }
-
-    function getCheckedBands() {
-      var checks = document.querySelectorAll("#bandCheckboxes input[type='checkbox'][data-band]");
-      var active = [];
-      for (var i = 0; i < checks.length; i++)
-        if (checks[i].checked) active.push(checks[i].getAttribute('data-band'));
-      return active;
-    }
-
-    function buildVenueTypeCheckboxes() {
-      var container = document.getElementById('venueTypeCheckboxes');
-      container.innerHTML = '';
-      var seen = {};
-      for (var i = 0; i < placements.length; i++) {
-        var vt = placements[i].venueType;
-        if (!vt) continue;
-        if (!seen[vt]) {
-          seen[vt] = true;
-          var div = document.createElement('div');
-          div.className = 'checkbox-item';
-          div.innerHTML =
-            "<input type='checkbox' data-type='venueType' data-value='" + vt + "' checked />" +
-            "<span>" + vt + "</span>";
-          container.appendChild(div);
-        }
-      }
-      var checks = container.querySelectorAll("#venueTypeCheckboxes input[type='checkbox']");
-      for (var j = 0; j < checks.length; j++) {
-        checks[j].addEventListener('change', function () {
-          applyFilters();
-        });
-      }
-    }
-
-    function getCheckedVenueTypes() {
-      var checks = document.querySelectorAll("#venueTypeCheckboxes input[type='checkbox'][data-type='venueType']");
-      var values = [];
-      for (var i = 0; i < checks.length; i++)
-        if (checks[i].checked) values.push(checks[i].getAttribute('data-value'));
-      return values;
-    }
-
-    function buildPublisherCheckboxes() {
-      var container = document.getElementById('publisherCheckboxes');
-      container.innerHTML = '';
-      var seen = {};
-      for (var i = 0; i < placements.length; i++) {
-        var pub = placements[i].publisher;
-        if (!pub) continue;
-        if (!seen[pub]) {
-          seen[pub] = true;
-          var div = document.createElement('div');
-          div.className = 'checkbox-item';
-          div.innerHTML =
-            "<input type='checkbox' data-publisher='" + pub + "' checked />" +
-            "<span>" + pub + "</span>";
-          container.appendChild(div);
-        }
-      }
-      var checks = container.querySelectorAll("#publisherCheckboxes input[type='checkbox']");
-      for (var j = 0; j < checks.length; j++) {
-        checks[j].addEventListener('change', function () {
-          applyFilters();
-        });
-      }
-    }
-
-    function getCheckedPublishers() {
-      var checks = document.querySelectorAll("#publisherCheckboxes input[type='checkbox'][data-publisher]");
-      var values = [];
-      for (var i = 0; i < checks.length; i++)
-        if (checks[i].checked) values.push(checks[i].getAttribute('data-publisher'));
-      return values;
-    }
-
-    // --- GEO: City / ZIP checkbox builders ---
-
-    function buildCityCheckboxes() {
-      var container = document.getElementById('cityCheckboxes');
-      if (!container) return;
-      container.innerHTML = '';
-      var seen = {};
-      placements.forEach(function (p) {
-        var city = p.city;
-        if (!city) return;
-        if (!seen[city]) {
-          seen[city] = true;
-          var div = document.createElement('div');
-          div.className = 'checkbox-item';
-          div.innerHTML =
-            "<input type='checkbox' data-city='" + city + "' checked />" +
-            "<span>" + city + "</span>";
-          container.appendChild(div);
-        }
-      });
-      var checks = container.querySelectorAll("input[type='checkbox']");
-      checks.forEach(function (cb) {
-        cb.addEventListener('change', function () {
-          applyFilters();
-        });
-      });
-    }
-
-    function buildZipCheckboxes() {
-      var container = document.getElementById('zipCheckboxes');
-      if (!container) return;
-      container.innerHTML = '';
-      var seen = {};
-      placements.forEach(function (p) {
-        var zip = p.zip;
-        if (!zip) return;
-        if (!seen[zip]) {
-          seen[zip] = true;
-          var div = document.createElement('div');
-          div.className = 'checkbox-item';
-          div.innerHTML =
-            "<input type='checkbox' data-zip='" + zip + "' checked />" +
-            "<span>" + zip + "</span>";
-          container.appendChild(div);
-        }
-      });
-      var checks = container.querySelectorAll("input[type='checkbox']");
-      checks.forEach(function (cb) {
-        cb.addEventListener('change', function () {
-          applyFilters();
-        });
-      });
-    }
-
-    function getCheckedCities() {
-      var cbs = document.querySelectorAll("#cityCheckboxes input[type='checkbox']:checked");
-      var values = [];
-      cbs.forEach(function (cb) {
-        values.push(cb.getAttribute("data-city"));
-      });
-      return values;
-    }
-
-    function getCheckedZips() {
-      var cbs = document.querySelectorAll("#zipCheckboxes input[type='checkbox']:checked");
-      var values = [];
-      cbs.forEach(function (cb) {
-        values.push(cb.getAttribute("data-zip"));
-      });
-      return values;
-    }
-
-    // --- Slider binding helpers ---
-
-    function bindSliderWithInputs(sliderId, minId, maxId) {
-      var slider = document.getElementById(sliderId);
-      var minInput = document.getElementById(minId);
-      var maxInput = document.getElementById(maxId);
-
-      slider.addEventListener('input', function () {
-        var v = Number(slider.value);
-        minInput.value = v;
-        if (Number(maxInput.value) < v) maxInput.value = v;
-        applyFilters();
-      });
-
-      minInput.addEventListener('change', function () {
-        var min = Number(minInput.value);
-        var max = Number(maxInput.value);
-        if (min < Number(slider.min)) min = Number(slider.min);
-        if (min > Number(slider.max)) min = Number(slider.max);
-        if (min > max) max = min;
-        minInput.value = min;
-        maxInput.value = max;
-        slider.value = min;
-        applyFilters();
-      });
-
-      maxInput.addEventListener('change', function () {
-        var min = Number(minInput.value);
-        var max = Number(maxInput.value);
-        if (max < min) max = min;
-        if (max > Number(slider.max)) max = Number(slider.max);
-        maxInput.value = max;
-        applyFilters();
-      });
-    }
-
-    bindSliderWithInputs('impSlider', 'impMin', 'impMax');
-    bindSliderWithInputs('spendSlider', 'spendMin', 'spendMax');
-    bindSliderWithInputs('cpmSlider', 'cpmMin', 'cpmMax');
-
-    
-function flyToVisibleMarkers() {
-  var layers = markerClusterGroup.getLayers();
-  if (!layers || layers.length === 0) { return; }
-  var bounds = markerClusterGroup.getBounds();
-  if (bounds && bounds.isValid()) {
-    map.fitBounds(bounds.pad(0.2));
-  }
-}
-
- // --- KPI updater ---
-
-    function updateKPIs() {
-      var visibleMarkers = markerClusterGroup.getLayers();
-
-      var total = visibleMarkers.length;
-      var totalImpressions = 0;
-      var totalCPM = 0;
-      var totalAudience = 0;
-
-      visibleMarkers.forEach(function (m) {
-        var p = placements.find(function (x) { return x.id === m.pid; });
-        if (!p) return;
-
-        totalImpressions += p.impressions || 0;
-        totalCPM += p.cpm || 0;
-        totalAudience += p.audienceScore || 0;
-      });
-
-      var avgCPM = total > 0 ? (totalCPM / total).toFixed(2) : "0";
-      var avgAudienceScore = total > 0 ? (totalAudience / total).toFixed(1) : "0";
-
-      document.getElementById("kpiCount").innerText = total;
-      document.getElementById("kpiImpressions").innerText = totalImpressions.toLocaleString();
-      document.getElementById("kpiCPM").innerText = "$" + avgCPM;
-      document.getElementById("kpiAudience").innerText = avgAudienceScore;
-    }
-
-    // --- Main filter function ---
-
-    function applyFilters() {
-      var amin = Number(document.getElementById('amin').value);
-      document.getElementById('aminv').innerText = amin;
-
-      var impEnabled = document.getElementById('impEnabled').checked;
-      var impMin = Number(document.getElementById('impMin').value);
-      var impMax = Number(document.getElementById('impMax').value);
-
-      var spendEnabled = document.getElementById('spendEnabled').checked;
-      var spendMin = Number(document.getElementById('spendMin').value);
-      var spendMax = Number(document.getElementById('spendMax').value);
-
-      var cpmEnabled = document.getElementById('cpmEnabled').checked;
-      var cpmMin = Number(document.getElementById('cpmMin').value);
-      var cpmMax = Number(document.getElementById('cpmMax').value);
-
-      var search = (document.getElementById('search').value || '').trim().toLowerCase();
-
-      var venueTypes = getCheckedVenueTypes();
-      var publishers = getCheckedPublishers();
-      var activeBands = getCheckedBands();
-      var selectedCities = getCheckedCities();
-      var selectedZips = getCheckedZips();
-
-      var useBandFilter = activeBands.length > 0;
-      var usePublisherFilter = publishers.length > 0;
-
-      markerClusterGroup.clearLayers();
-
-      for (var i = 0; i < markers.length; i++) {
-        var m = markers[i];
-        var p = null;
-        for (var k = 0; k < placements.length; k++) {
-          if (placements[k].id === m.pid) { p = placements[k]; break; }
-        }
-        if (!p) continue;
-
-        var vis = true;
-
-        var score = p.audienceScore || 0;
-        if (score < amin) vis = false;
-
-        if (vis && impEnabled && typeof p.impressions === 'number') {
-          if (p.impressions < impMin || p.impressions > impMax) vis = false;
-        }
-        if (vis && spendEnabled && typeof p.spend === 'number') {
-          if (p.spend < spendMin || p.spend > spendMax) vis = false;
-        }
-        if (vis && cpmEnabled && typeof p.cpm === 'number') {
-          if (p.cpm < cpmMin || p.cpm > cpmMax) vis = false;
-        }
-
-        if (vis && venueTypes.length > 0 && p.venueType && venueTypes.indexOf(p.venueType) === -1) {
-          vis = false;
-        }
-
-        if (vis) {
-          if (!usePublisherFilter) {
-            vis = false;
-          } else if (p.publisher && publishers.indexOf(p.publisher) === -1) {
-            vis = false;
-          }
-        }
-
-        if (vis && search) {
-          var haystack = (p.id + ' ' + p.name + ' ' + (p.publisher || '')).toLowerCase();
-          if (haystack.indexOf(search) === -1) vis = false;
-        }
-
-        if (vis && useBandFilter) {
-          var inAnyBand = false;
-          for (var b = 0; b < activeBands.length; b++) {
-            var bandKey = activeBands[b];
-            var range = bandRanges[bandKey];
-            if (!range) continue;
-            if (p.distanceFromCenter >= range[0] && p.distanceFromCenter < range[1]) {
-              inAnyBand = true; break;
-            }
-          }
-          if (!inAnyBand) vis = false;
-        }
-
-        // NEW: city filter
-        if (vis && selectedCities.length > 0) {
-          if (!p.city || selectedCities.indexOf(p.city) === -1) vis = false;
-        }
-
-        // NEW: zip filter
-        if (vis && selectedZips.length > 0) {
-          if (!p.zip || selectedZips.indexOf(p.zip) === -1) vis = false;
-        }
-
-        if (vis) markerClusterGroup.addLayer(m);
-      }
-
-      updateKPIs();
-    }
-
-    // Search / buttons
-    document.getElementById('searchBtn').addEventListener('click', function () {
-      applyFilters();
-    });
-    document.getElementById('search').addEventListener('keyup', function (e) {
-      if (e.key === 'Enter') applyFilters();
-    });
-    document.getElementById('clearBtn').addEventListener('click', function () {
-      document.getElementById('search').value = '';
-      applyFilters();
-    });
-    document.getElementById('amin').addEventListener('input', function () {
-      applyFilters();
-    });
-
-    // Init UI
-    buildVenueTypeCheckboxes();
-    buildBandCheckboxes();
-    buildPublisherCheckboxes();
-    buildCityCheckboxes();
-    buildZipCheckboxes();
-    applyFilters();
-    applyBandFilters();
-	
-	// === Export visible/filtered boards as CSV (only what is currently on screen) ===
-function exportVisibleBoardsToCSV() {
-  if (!window.markerClusterGroup || !window.placements) {
-    alert('Map is not initialized yet.');
-    return;
-  }
-
-  var layers = markerClusterGroup.getLayers();
-  if (!layers || layers.length === 0) {
-    alert('No boards to export. Adjust your filters and zoom level first.');
-    return;
-  }
-
-  var header = [
-    'Screen ID',
-    'Name',
-    'Publisher',
-    'City',
-    'Zip',
-    'Venue Type',
-    'Audience Score',
-    'Impressions',
-    'Spend',
-    'Floor CPM',
-    'Distance From Center (mi)'
-  ];
-  var rows = [header.join(',')];
-
-  function esc(v) {
-    if (v === null || v === undefined) v = '';
-    v = String(v);
-    if (v.indexOf(',') !== -1 || v.indexOf('"') !== -1) {
-      v = '"' + v.replace(/"/g, '""') + '"';
-    }
-    return v;
-  }
-
-  for (var i = 0; i < layers.length; i++) {
-    var marker = layers[i];
-    var p = null;
-
-    // Match this marker to a placement by id
-    for (var j = 0; j < placements.length; j++) {
-      if (placements[j].id === marker.pid) {
-        p = placements[j];
-        break;
-      }
-    }
-    if (!p) continue;
-
-    var d = (typeof p.distanceFromCenter === 'number')
-      ? p.distanceFromCenter.toFixed(2)
-      : '';
-
-    var row = [
-      esc(p.id),
-      esc(p.name),
-      esc(p.publisher),
-      esc(p.city),
-      esc(p.zip),
-      esc(p.venueType),
-      esc(p.audienceScore),
-      esc(p.impressions),
-      esc(p.spend),
-      esc(p.cpm),
-      esc(d)
+    // Distance circles at 10, 20, 30, and 40 miles
+    var radiusConfig = [
+      { miles: 10, color: "rgba(37,99,235,0.55)" },
+      { miles: 20, color: "rgba(16,185,129,0.45)" },
+      { miles: 30, color: "rgba(234,179,8,0.35)" },
+      { miles: 40, color: "rgba(248,113,113,0.25)" }
     ];
 
-    rows.push(row.join(','));
-  }
+    radiusConfig.forEach(function (band) {
+      var meters = band.miles * 1609.34;
+      L.circle(airportCenter, {
+        radius: meters,
+        color: band.color,
+        fillColor: band.color,
+        fillOpacity: 0.35,
+        weight: 1
+      }).addTo(map);
+    });
 
-  if (rows.length === 1) {
-    alert('No boards are currently visible to export.');
-    return;
-  }
+    // Marker cluster group
+    var markerCluster = L.markerClusterGroup();
 
-  var csv = rows.join('\n');
-  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  a.href = url;
-  a.download = 'visible_boards_' + new Date().toISOString().slice(0, 10) + '.csv';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
+    // placement.id -> marker
+    var markerIndex = {};
 
-// Wire up the Export button
-(function () {
-  function hookupExportButton() {
-    var btn = document.getElementById('exportVisibleBtn');
-    if (btn) {
-      btn.addEventListener('click', exportVisibleBoardsToCSV);
+    // Compute distance for each placement and create markers
+    placements.forEach(function (p) {
+      if (p.lat == null || p.lng == null) return;
+
+      p.distanceMiles = distanceMiles(
+        airportCenter[0],
+        airportCenter[1],
+        p.lat,
+        p.lng
+      );
+
+      var popupHtml =
+        "<div style='font-size:12px;'>" +
+        "<div><strong>ID:</strong> " +
+        p.id +
+        "</div>" +
+        "<div><strong>Publisher:</strong> " +
+        (p.publisher || "") +
+        "</div>" +
+        "<div><strong>Venue:</strong> " +
+        (p.venueType || "") +
+        "</div>" +
+        "<div><strong>City/ZIP:</strong> " +
+        (p.city || "") +
+        " " +
+        (p.zip || "") +
+        "</div>" +
+        "<div><strong>Impressions:</strong> " +
+        (p.impressions != null ? p.impressions.toLocaleString() : "—") +
+        "</div>" +
+        "<div><strong>Spend:</strong> " +
+        (p.spend != null ? "$" + p.spend.toFixed(2) : "—") +
+        "</div>" +
+        "<div><strong>CPM:</strong> " +
+        (p.cpm != null ? "$" + p.cpm.toFixed(2) : "—") +
+        "</div>" +
+        "<div><strong>Distance:</strong> " +
+        (p.distanceMiles != null ? p.distanceMiles.toFixed(2) + " mi" : "—") +
+        "</div>" +
+        "</div>";
+
+      var marker = L.marker([p.lat, p.lng]);
+      marker.bindPopup(popupHtml);
+      markerCluster.addLayer(marker);
+      markerIndex[p.id] = marker;
+    });
+
+    map.addLayer(markerCluster);
+
+    // Helper: unique & sorted
+    function uniqueSorted(arr) {
+      return Array.from(new Set(arr.filter(Boolean))).sort();
     }
-  }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', hookupExportButton);
-  } else {
-    hookupExportButton();
-  }
-})();
+    var publishers = uniqueSorted(
+      placements.map(function (p) {
+        return p.publisher;
+      })
+    );
+    var venueTypes = uniqueSorted(
+      placements.map(function (p) {
+        return p.venueType;
+      })
+    );
 
-// timestamp footer
-document.getElementById('timestamp').innerText = 'Exported: ' + new Date().toLocaleString();
+    var activePublishers = new Set(publishers);
+    var activeVenues = new Set(venueTypes);
 
-    // timestamp footer
-    document.getElementById('timestamp').innerText = 'Exported: ' + new Date().toLocaleString();
-  </script>
+    // Fixed distance bands (always 0–10, 10–20, 20–30, 30–40, 40+)
+    var distanceBands = [
+      { id: "0-10", label: "0–10 mi", min: 0, max: 10 },
+      { id: "10-20", label: "10–20 mi", min: 10, max: 20 },
+      { id: "20-30", label: "20–30 mi", min: 20, max: 30 },
+      { id: "30-40", label: "30–40 mi", min: 30, max: 40 },
+      { id: "40+", label: "40+ mi", min: 40, max: Infinity }
+    ];
+    var activeDistanceBands = new Set(distanceBands.map(function (b) { return b.id; }));
 
-<script>
-// === Export visible boards (added non-destructively) ===
-(function() {
-  function exportVisibleBoardsToCSV() {
-    if (!window.markerClusterGroup || !window.placements) {
-      alert('Map is not initialized yet.');
-      return;
+    function bandIdForDistance(d) {
+      if (d == null || isNaN(d)) return null;
+      if (d >= 0 && d < 10) return "0-10";
+      if (d >= 10 && d < 20) return "10-20";
+      if (d >= 20 && d < 30) return "20-30";
+      if (d >= 30 && d < 40) return "30-40";
+      return "40+";
     }
-    var layers = markerClusterGroup.getLayers();
-    if (!layers || layers.length === 0) {
-      alert('No boards to export. Adjust your filters and zoom level first.');
-      return;
-    }
-    var header = ['Screen ID','Name','Publisher','City','Zip','Venue Type','Audience Score','Impressions','Spend','Floor CPM','Distance From Center (mi)'];
-    var rows = [header.join(',')];
-    function esc(v) {
-      if (v === null || v === undefined) v = '';
-      v = String(v);
-      if (v.indexOf(',') !== -1 || v.indexOf('"') !== -1) {
-        v = '"' + v.replace(/"/g,'""') + '"';
+
+    function buildChips(containerId, values, activeSet, onChange, options) {
+      var container = document.getElementById(containerId);
+      container.innerHTML = "";
+      var isDistance = options && options.type === "distance";
+
+      values.forEach(function (val) {
+        var chip = document.createElement("div");
+        chip.className = "chip active";
+        chip.textContent = val.label || val;
+        chip.dataset.value = val.id || val;
+
+        chip.addEventListener("click", function () {
+          var key = val.id || val;
+          if (activeSet.has(key)) {
+            activeSet.delete(key);
+            chip.classList.remove("active");
+          } else {
+            activeSet.add(key);
+            chip.classList.add("active");
+          }
+          onChange();
+        });
+
+        container.appendChild(chip);
+      });
+
+      if (values.length > 1) {
+        var allChip = document.createElement("div");
+        allChip.className = "chip control-chip";
+        allChip.textContent = "All";
+        allChip.addEventListener("click", function () {
+          values.forEach(function (v) {
+            activeSet.add(v.id || v);
+          });
+          Array.from(container.children).forEach(function (c) {
+            if (c.classList.contains("chip") && !c.classList.contains("control-chip")) {
+              c.classList.add("active");
+            }
+          });
+          onChange();
+        });
+        container.appendChild(allChip);
+
+        var noneChip = document.createElement("div");
+        noneChip.className = "chip control-chip";
+        noneChip.textContent = "None";
+        noneChip.addEventListener("click", function () {
+          activeSet.clear();
+          Array.from(container.children).forEach(function (c) {
+            if (c.classList.contains("chip") && !c.classList.contains("control-chip")) {
+              c.classList.remove("active");
+            }
+          });
+          onChange();
+        });
+        container.appendChild(noneChip);
       }
-      return v;
     }
-    for (var i = 0; i < layers.length; i++) {
-      var marker = layers[i];
-      var p = null;
-      for (var j = 0; j < placements.length; j++) {
-        if (placements[j].id === marker.pid) {
-          p = placements[j];
-          break;
+
+    // Build chips
+    buildChips(
+      "publisher-chips",
+      publishers,
+      activePublishers,
+      applyFilters
+    );
+    buildChips("venue-chips", venueTypes, activeVenues, applyFilters);
+    buildChips(
+      "distance-chips",
+      distanceBands,
+      activeDistanceBands,
+      applyFilters,
+      { type: "distance" }
+    );
+
+    // CPM & Spend inputs
+    var minCpmInput = document.getElementById("min-cpm");
+    var maxCpmInput = document.getElementById("max-cpm");
+    var minSpendInput = document.getElementById("min-spend");
+    var maxSpendInput = document.getElementById("max-spend");
+
+    [minCpmInput, maxCpmInput, minSpendInput, maxSpendInput].forEach(function (
+      input
+    ) {
+      input.addEventListener("change", applyFilters);
+    });
+
+    // KPI elements
+    var kpiImpressions = document.getElementById("kpi-impressions");
+    var kpiSpend = document.getElementById("kpi-spend");
+    var kpiCpm = document.getElementById("kpi-cpm");
+    var kpiCount = document.getElementById("kpi-count");
+
+    // Placement list container
+    var placementListContainer = document.getElementById("placement-list");
+
+    function formatCurrency(num) {
+      if (num == null || isNaN(num)) return "$0";
+      return "$" + num.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    }
+
+    function applyFilters() {
+      var minCpm = parseFloat(minCpmInput.value);
+      var maxCpm = parseFloat(maxCpmInput.value);
+      var minSpend = parseFloat(minSpendInput.value);
+      var maxSpend = parseFloat(maxSpendInput.value);
+
+      var filtered = placements.filter(function (p) {
+        // Publisher filter
+        if (!activePublishers.has(p.publisher)) return false;
+
+        // Venue filter
+        if (!activeVenues.has(p.venueType)) return false;
+
+        // Distance band filter (always based on 0–10,10–20,20–30,30–40,40+)
+        var bandId = bandIdForDistance(p.distanceMiles);
+        if (!bandId || !activeDistanceBands.has(bandId)) return false;
+
+        // CPM filters
+        if (!isNaN(minCpm) && p.cpm != null && p.cpm < minCpm) return false;
+        if (!isNaN(maxCpm) && p.cpm != null && p.cpm > maxCpm) return false;
+
+        // Spend filters
+        if (!isNaN(minSpend) && p.spend != null && p.spend < minSpend)
+          return false;
+        if (!isNaN(maxSpend) && p.spend != null && p.spend > maxSpend)
+          return false;
+
+        return true;
+      });
+
+      // Update markers
+      markerCluster.clearLayers();
+      filtered.forEach(function (p) {
+        var m = markerIndex[p.id];
+        if (m) markerCluster.addLayer(m);
+      });
+
+      // Update KPI
+      var totalImpressions = 0;
+      var totalSpend = 0;
+      var totalCpmWeighted = 0;
+      var impressionsWithCpm = 0;
+
+      filtered.forEach(function (p) {
+        if (p.impressions != null && !isNaN(p.impressions)) {
+          totalImpressions += p.impressions;
         }
+        if (p.spend != null && !isNaN(p.spend)) {
+          totalSpend += p.spend;
+        }
+        if (
+          p.cpm != null &&
+          !isNaN(p.cpm) &&
+          p.impressions != null &&
+          !isNaN(p.impressions)
+        ) {
+          totalCpmWeighted += p.cpm * p.impressions;
+          impressionsWithCpm += p.impressions;
+        }
+      });
+
+      var avgCpm =
+        impressionsWithCpm > 0 ? totalCpmWeighted / impressionsWithCpm : 0;
+
+      kpiImpressions.textContent = totalImpressions.toLocaleString();
+      kpiSpend.textContent = formatCurrency(totalSpend);
+      kpiCpm.textContent = avgCpm.toFixed(2);
+      kpiCount.textContent = filtered.length.toString();
+
+      // Update placement list
+      renderPlacementList(filtered);
+    }
+
+    function renderPlacementList(list) {
+      placementListContainer.innerHTML = "";
+      if (!list.length) {
+        var empty = document.createElement("div");
+        empty.className = "placement-row";
+        empty.textContent = "No placements match the current filters.";
+        placementListContainer.appendChild(empty);
+        return;
       }
-      if (!p) continue;
-      var d = (typeof p.distanceFromCenter === 'number') ? p.distanceFromCenter.toFixed(2) : '';
-      var row = [
-        esc(p.id),
-        esc(p.name),
-        esc(p.publisher),
-        esc(p.city),
-        esc(p.zip),
-        esc(p.venueType),
-        esc(p.audienceScore),
-        esc(p.impressions),
-        esc(p.spend),
-        esc(p.cpm),
-        esc(d)
-      ];
-      rows.push(row.join(','));
+
+      // Sort by distance from center
+      list = list
+        .slice()
+        .sort(function (a, b) {
+          return (a.distanceMiles || 0) - (b.distanceMiles || 0);
+        });
+
+      list.forEach(function (p) {
+        var row = document.createElement("div");
+        row.className = "placement-row";
+
+        var nameEl = document.createElement("div");
+        nameEl.className = "placement-name";
+        nameEl.textContent = p.id;
+
+        var bandId = bandIdForDistance(p.distanceMiles);
+        var bandLabel =
+          (distanceBands.find(function (b) {
+            return b.id === bandId;
+          }) || {}).label || "";
+
+        var metaEl = document.createElement("div");
+        metaEl.className = "placement-meta";
+        metaEl.innerHTML =
+          "<span class='badge'>" +
+          (p.publisher || "") +
+          "</span>" +
+          "<span class='badge'>" +
+          (p.venueType || "") +
+          "</span>" +
+          (bandLabel
+            ? " <span class='badge'>" + bandLabel + "</span>"
+            : "") +
+          "<br/>" +
+          (p.city || "") +
+          (p.zip ? " " + p.zip : "") +
+          " • " +
+          (p.distanceMiles != null
+            ? p.distanceMiles.toFixed(1) + " mi"
+            : "—") +
+          "<br/>Impressions: " +
+          (p.impressions != null
+            ? p.impressions.toLocaleString()
+            : "—") +
+          " • Spend: " +
+          (p.spend != null ? "$" + p.spend.toFixed(2) : "—") +
+          " • CPM: " +
+          (p.cpm != null ? "$" + p.cpm.toFixed(2) : "—");
+
+        row.appendChild(nameEl);
+        row.appendChild(metaEl);
+
+        row.addEventListener("click", function () {
+          var m = markerIndex[p.id];
+          if (m) {
+            map.setView(m.getLatLng(), 13);
+            m.openPopup();
+          }
+        });
+
+        placementListContainer.appendChild(row);
+      });
     }
-    if (rows.length === 1) {
-      alert('No boards are currently visible to export.');
-      return;
-    }
-    var csv = rows.join('
-');
-    var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = 'visible_boards_' + new Date().toISOString().slice(0,10) + '.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }
 
-  function addExportControls() {
-    var panel = document.getElementById('panel');
-    if (!panel) return;
-    // Section title
-    var titleDiv = document.createElement('div');
-    titleDiv.className = 'section-title';
-    titleDiv.textContent = 'Export';
-    // Form group with button
-    var groupDiv = document.createElement('div');
-    groupDiv.className = 'form-group';
-    var btn = document.createElement('button');
-    btn.id = 'exportVisibleBtn';
-    btn.textContent = 'Export Visible Boards (CSV)';
-    groupDiv.appendChild(btn);
-    panel.appendChild(titleDiv);
-    panel.appendChild(groupDiv);
-    btn.addEventListener('click', exportVisibleBoardsToCSV);
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', addExportControls);
-  } else {
-    addExportControls();
-  }
-})();
-</script>
-
+    // Initial filter application
+    applyFilters();
+  </script>
 </body>
 </html>
