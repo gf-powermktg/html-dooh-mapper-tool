@@ -154,9 +154,24 @@
 
 .range-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr; /* two equal columns */
   gap: 6px;
   margin-top: 6px;
+}
+
+/* keep label + input stacked nicely in each column */
+.range-row .range-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* inputs will shrink with the column instead of overflowing */
+.range-row .range-field input[type="number"] {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 12px;
+  padding: 2px 4px;
 }
 
     .range-row input[type="number"] {
@@ -342,36 +357,39 @@
             <div id="venue-chips" class="chips"></div>
           </div>
 
-          <div class="filter-group">
-            <div class="kpi-label" style="margin-bottom: 4px;">
-              CPM &amp; Spend
-            </div>
-     <div class="range-row">
-  <div>
-    <label for="min-cpm">Min CPM</label>
-    <input type="number" id="min-cpm" step="0.01" />
-  </div>
-  <div>
-    <label for="max-cpm">Max CPM</label>
-    <input type="number" id="max-cpm" step="0.01" />
-  </div>
-</div>
-         <div class="range-row">
-  <div>
-    <label for="min-cpm">Min Spend</label>
-    <input type="number" id="min-spend" step="0.01" />
+<div class="filter-group">
+  <div class="kpi-label" style="margin-bottom: 4px;">
+    CPM &amp; Spend
   </div>
 
-  <div>
-    <label for="max-cpm">Max Spend</label>
-    <input type="number" id="max-spend" step="0.01" />
+  <!-- CPM row -->
+  <div class="range-row">
+    <div class="range-field">
+      <label for="min-cpm">Min CPM</label>
+      <input type="number" id="min-cpm" step="0.01" />
+    </div>
+    <div class="range-field">
+      <label for="max-cpm">Max CPM</label>
+      <input type="number" id="max-cpm" step="0.01" />
+    </div>
+  </div>
+
+  <!-- Spend row -->
+  <div class="range-row">
+    <div class="range-field">
+      <label for="min-spend">Min Spend</label>
+      <input type="number" id="min-spend" step="0.01" />
+    </div>
+    <div class="range-field">
+      <label for="max-spend">Max Spend</label>
+      <input type="number" id="max-spend" step="0.01" />
+    </div>
+  </div>
+
+  <div class="small-muted">
+    Leave blank for no limit. All values are in USD.
   </div>
 </div>
-            <div class="small-muted">
-              Leave blank for no limit. All values are in USD.
-            </div>
-          </div>
-        </div>
 
         <div class="section-title">Placements (Filtered)</div>
         <div id="placement-list" class="placement-list"></div>
